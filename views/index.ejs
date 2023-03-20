@@ -1,41 +1,131 @@
 <%- contentFor('body') %>
 
 <table class="table">
-    <thead>
-        <tr>
-            <th scope="col">ID</th>
-            <th scope="col">Name</th>
-            <th scope="col">Address</th>
-            <th scope="col">Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        <% users.forEach(function(user,index) { %>
-        <tr>
-            <th scope="row"><%=index%></th>
-            <td><%= user.name %></td>
-            <td><%= user.address %></td>
-            <td>
-                <button class="btn btn-danger" type="button" class="delete-user"
-                    onclick="deleteUser('<%= user._id %>')">Delete</button>
-            </td>
-        </tr>
-        <% }); %>
+  <thead>
+    <tr>
+      <th scope="col">ID</th>
+      <th scope="col">Name</th>
+      <th scope="col">Address</th>
+      <th scope="col">Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% users.forEach(function(user,index) { %>
+    <tr>
+      <th scope="row"><%=index%></th>
+      <td><%= user.name %></td>
+      <td><%= user.address %></td>
+      <td>
+        <button class="btn btn-danger" type="button" class="delete-user" onclick="deleteUser('<%= user._id %>')">Delete</button>
+        <button class="btn btn-success" type="button" id="update-user" onclick="updateUser('<%= user._id %>')">Update</button>
+      </td>
+    </tr>
+    <% }); %>
 
-    </tbody>
+  </tbody>
 </table>
 
-<script>
-    function deleteUser(id) {
-        if (confirm("Would you like to delete it")) {
-            fetch(`/users?id=${id}`, {
-                method: 'DELETE'
-            }).then((response) => {
-                window.location.reload();
-            }).catch((error) => {
-                console.log(error);
-            });
-        }
-    }
+<div class="modal fade" id="updateUserModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Update User</h5>
+        <button type="button" onclick="closeModal(event)" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form onsubmit="updateSubmit(event)">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="name" class="form-label">Name</label>
+            <input type="hidden" class="form-control" id="idVal" />
+            <input type="text" class="form-control" id="name" placeholder="Enter your name" required />
+          </div>
+          <div class="mb-3">
+            <label for="address" class="form-label">Address</label>
+            <input type="text" class="form-control" id="address" placeholder="Enter your address" required />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" onclick="closeModal(event)" class="btn btn-secondary" data-bs-dismiss="modal">
+            Close
+          </button>
+          <button type="submit" class="btn btn-primary">
+            Update User
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
+<script>
+  // Delete User
+  function deleteUser(id) {
+    if (confirm("Would you like to delete it")) {
+      fetch(`/users?id=${id}`, {
+        method: 'DELETE'
+      }).then((response) => {
+        window.location.reload();
+      }).catch((error) => {
+        console.log(error);
+      });
+    }
+  }
+
+  //Update modal Instance
+  const updateUserModal = document.querySelector('#updateUserModal');
+
+
+  // Set data for updating user
+  function updateUser(id) {
+    fetch(`/users/${id}`)
+      .then(response => response.json())
+      .then(data => {
+        console.log(data)
+        updateUserModal.classList.add('show');
+        updateUserModal.style.display = 'block';
+        updateUserModal.removeAttribute('aria-hidden');
+        document.body.classList.add('modal-open');
+
+        document.getElementById("name").value = data.name;
+        document.getElementById("address").value = data.address;
+        document.getElementById("idVal").value = data._id;
+      })
+      .catch(error => console.log(error));
+  }
+
+  //Close Modal window
+  function closeModal(event) {
+    updateUserModal.classList.remove('show');
+    updateUserModal.style.display = 'none';
+    updateUserModal.setAttribute('aria-hidden', true);
+    document.body.classList.remove('modal-open');
+  }
+
+
+  //Submit Udpate data to the API
+  function updateSubmit(event) {
+    event.preventDefault();
+    let form = event.target;
+    let name = form.name.value;
+    let address = form.address.value;
+    let id = form.idVal.value;
+    //  alert("Name: " + name + "\nAddress: " + address + "\nid: " + id);
+    fetch(`/users?id=${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: name,
+          address: address
+        })
+      }).then(response => response.json())
+      .then(data => {
+        console.log(data)
+        closeModal();
+        window.location.reload();
+      })
+      .catch(error => console.log(error))
+
+  }
 </script>
