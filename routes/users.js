@@ -1,11 +1,14 @@
 var express = require("express");
+const mongoose = require("mongoose");
 const { ObjectId } = require("mongodb");
 const { getDb } = require("../utils/db");
+const userSchema = require("../Model/user_model");
 var router = express.Router();
 
+const Customer = mongoose.model("customers", userSchema);
 /* GET users listing. */
 router.get("/", async function (req, res, next) {
-  const result = await getDb.collection("customer").find().toArray();
+  const result = await getDb.collection("customers").find().toArray();
   res.json({ success: true, users: result });
 });
 
@@ -13,15 +16,17 @@ router.get("/", async function (req, res, next) {
 router.get("/:id", async function (req, res, next) {
   const id = req.params.id;
   const result = await getDb
-    .collection("customer")
+    .collection("customers")
     .findOne({ _id: new ObjectId(id) });
   return res.json(result);
 });
 
 /* POST users listing. */
 router.post("/", async function (req, res, next) {
-  const data = req.body;
-  const result = await getDb.collection("customer").insertOne(data);
+  const newCustomer = new Customer(req.body);
+  // const data = req.body;
+  //const result = await getDb.collection("customer").insertOne(data);
+  const result = newCustomer.save();
   res.send(result);
 });
 
@@ -30,7 +35,7 @@ router.put("/", async function (req, res, next) {
   const id = req.query.id;
   const data = req.body;
   const result = await getDb
-    .collection("customer")
+    .collection("customers")
     .updateOne({ _id: new ObjectId(id) }, { $set: data });
   res.send(result);
 });
@@ -40,7 +45,7 @@ router.delete("/", async function (req, res, next) {
   const id = req.query.id;
   console.log(id);
   const result = await getDb
-    .collection("customer")
+    .collection("customers")
     .deleteOne({ _id: new ObjectId(id) });
   return res.send({ success: true });
 });
