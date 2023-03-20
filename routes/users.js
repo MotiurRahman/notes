@@ -7,9 +7,21 @@ var router = express.Router();
 
 const Customer = mongoose.model("customers", userSchema);
 /* GET users listing. */
+// router.get("/", async function (req, res, next) {
+//   const result = await getDb.collection("customers").find().toArray();
+//   res.json({ success: true, users: result });
+// });
+
 router.get("/", async function (req, res, next) {
-  const result = await getDb.collection("customers").find().toArray();
-  res.json({ success: true, users: result });
+  try {
+    const user = await Customer.find({});
+    res.status(200).json(user);
+  } catch (err) {
+    res.status(400).json({
+      status: "fail",
+      error: err.message,
+    });
+  }
 });
 
 /* GET users listing with ID */
@@ -23,21 +35,50 @@ router.get("/:id", async function (req, res, next) {
 
 /* POST users listing. */
 router.post("/", async function (req, res, next) {
-  const newCustomer = new Customer(req.body);
-  // const data = req.body;
-  //const result = await getDb.collection("customer").insertOne(data);
-  const result = newCustomer.save();
-  res.send(result);
+  try {
+    const newCustomer = new Customer(req.body);
+    // const data = req.body;
+    // const result = await getDb.collection("customers").insertOne(data);
+    const result = await newCustomer.save();
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({
+      status: "fail",
+      message: "data is not inserted",
+      error: err.message,
+    });
+  }
 });
+
+// /* Update users listing. */
+// router.put("/", async function (req, res, next) {
+//   const id = req.query.id;
+//   const data = req.body;
+//   const result = await getDb
+//     .collection("customers")
+//     .updateOne({ _id: new ObjectId(id) }, { $set: data });
+//   res.send(result);
+// });
 
 /* Update users listing. */
 router.put("/", async function (req, res, next) {
-  const id = req.query.id;
-  const data = req.body;
-  const result = await getDb
-    .collection("customers")
-    .updateOne({ _id: new ObjectId(id) }, { $set: data });
-  res.send(result);
+  try {
+    const id = req.query.id;
+    const data = req.body;
+    const filter = { _id: new ObjectId(id) };
+    const update = data;
+    // const result = await getDb.collection("customers").insertOne(data);
+    const result = await Customer.update(filter, update, {
+      new: true,
+    });
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({
+      status: "fail",
+      message: "data is not inserted",
+      error: err.message,
+    });
+  }
 });
 
 /* Delete users listing. */
