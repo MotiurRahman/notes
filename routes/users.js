@@ -82,13 +82,29 @@ router.put("/", async function (req, res, next) {
 });
 
 /* Delete users listing. */
+// router.delete("/", async function (req, res, next) {
+//   const id = req.query.id;
+//   console.log(id);
+//   const result = await getDb
+//     .collection("customers")
+//     .deleteOne({ _id: new ObjectId(id) });
+//   return res.send({ success: true });
+// });
+
+/* Delete users listing. */
 router.delete("/", async function (req, res, next) {
-  const id = req.query.id;
-  console.log(id);
-  const result = await getDb
-    .collection("customers")
-    .deleteOne({ _id: new ObjectId(id) });
-  return res.send({ success: true });
+  try {
+    const id = req.query.id;
+    const filter = { _id: new ObjectId(id) };
+    const result = await Customer.deleteOne(filter);
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({
+      status: "fail",
+      message: "data is not inserted",
+      error: err.message,
+    });
+  }
 });
 
 module.exports = router;
