@@ -66,9 +66,9 @@ router.put("/", async function (req, res, next) {
     const id = req.query.id;
     const data = req.body;
     const filter = { _id: new ObjectId(id) };
-    const update = data;
+    //  const update = data;
     // const result = await getDb.collection("customers").insertOne(data);
-    const result = await Customer.update(filter, update, {
+    const result = await Customer.updateOne(filter, data, {
       new: true,
     });
     res.json(result);
